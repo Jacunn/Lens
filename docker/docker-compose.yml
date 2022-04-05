@@ -1,0 +1,13 @@
+version: '2'
+
+services:
+  lens:
+    tty: true
+    image: docker.io/bitnami/laravel:8
+    container_name: lens
+    ports:
+      - 8000:8000
+    volumes:
+      - ../:/app
+
+    privileged: true # Privileged mode could be required to run this container under Windows
