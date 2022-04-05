@@ -59,13 +59,14 @@ class LoginController extends Controller
         try {
             $user = Socialite::driver('google')->user();
         } catch (\Exception $e) {
-            return redirect('/');
+            return redirect(route('login'));
         }
 
         // only allow people with @company.com to login
         if(explode("@", $user->email)[1] !== 'launtel.net.au'){
-            return redirect()->to('/');
+            return redirect(route('login'));
         }
+
         // check if they're an existing user
         $existingUser = User::where('email', $user->email)->first();
         
@@ -73,8 +74,8 @@ class LoginController extends Controller
             auth()->login($existingUser, true);
         } else {
             // create a new user
-            $newUser                  = new User;
-            $newUser->email           = $user->email;
+            $newUser = new User;
+            $newUser->email = $user->email;
             $newUser->save();
             auth()->login($newUser, true);
         }
