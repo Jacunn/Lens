@@ -12,7 +12,7 @@
         </div>
     </div>
     <div class="card-body">
-        <form action="{{ route('query-crafter') }}" method="GET">
+        <form action="{{ secure_url('query-crafter') }}" method="GET">
             @csrf
             <div class="form-group">
                 <label for="database">Database</label>
