@@ -66,7 +66,7 @@ class LoginController extends Controller
         if(explode("@", $user->email)[1] !== 'launtel.net.au'){
             return redirect(route('login'));
         }
-
+        
         // check if they're an existing user
         $existingUser = User::where('email', $user->email)->first();
         

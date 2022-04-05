@@ -4,6 +4,15 @@
 @push('js')
 <script>
     $(document).ready(function() {
+        
+        $('#share-link').on('click', function() {
+            var x = $("<input>");
+            $("body").append(x);
+            x.val( "{{!! addcslashes($copy_link, "'") !!}}" ).select();
+            document.execCommand("copy");
+            x.remove();
+        });
+
         $('#export-csv').on('click', function() {
             $.ajax({
                 type : 'GET',
@@ -89,18 +98,19 @@
         <div class="row mt-3">
             <div class="col text-left mx-auto">
                 <button id="export-csv" class="btn btn-secondary">Export CSV</button>
+                <button id="share-link" class="btn btn-secondary">Share Link</button>
             </div>
         </div>
         <div class="row mt-3">
             <div class="col text-left mx-auto">
-                <span><strong>Simplified Unbound Query:</strong></span>
+                <span><strong>Simplified Query:</strong></span>
                 </br>
                 <span>{{ $query_sql }}</span>
             </div>
         </div>
         <div class="row mt-3">
             <div class="col text-left mx-auto">
-                <span><strong>Full Unbound Query:</strong></span>
+                <span><strong>Full Query:</strong></span>
                 </br>
                 <span id="sql-query">Loading...</span>
             </div>

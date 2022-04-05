@@ -101,6 +101,7 @@ class Controller extends BaseController
             'get_parameters' => $_request->all(),
             'query_sql' => $query->toSql(),
             'columns' => $columns,
+            'copy_link' => route('table-view', $_request->all()),
             'back_link' => route('query-crafter', ['database' => $_request->input('database')])
         ]);
     }
