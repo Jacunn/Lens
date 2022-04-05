@@ -48,7 +48,7 @@ class Controller extends BaseController
             die('HIGH LEVEL INJECTION ATTEMPT OR FALSE DATABASE PROVIDED. BOOTING USER AND TERMINATING PROCESS.');
         }
 
-        $table_results = DB::select("SHOW TABLES FROM $database_input");
+        $table_results = DB::select("SHOW FULL TABLES FROM $database_input WHERE Table_Type NOT LIKE 'VIEW'");
         $table_list = [];
 
         foreach($table_results as $table) {
