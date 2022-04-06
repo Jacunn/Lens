@@ -123,7 +123,7 @@ class Controller extends BaseController
             'query_sql' => $query->toSql(),
             'columns' => $columns,
             'copy_link' => route('table-view', $_request->all()),
-            'back_link' => route('query-crafter', ['database' => $_request->input($this->param_names['database-name'])]),
+            'back_link' => route('query-crafter', [$this->param_names['database-name'] => $_request->input($this->param_names['database-name'])]),
             'param_names' => $this->param_names
         ]);
     }
