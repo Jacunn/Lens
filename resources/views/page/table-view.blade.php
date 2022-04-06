@@ -5,7 +5,6 @@
 <script>
 
     $(document).ready(function() {
-        
         $('#share-link').on('click', function() {
             var x = $("<input>");
             $("body").append(x);

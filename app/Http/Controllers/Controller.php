@@ -244,7 +244,7 @@ class Controller extends BaseController
             // Iterate over tables, building our schema.
             foreach($table_results as $table) {
                 // Extract the name from our above query results...
-                $table_name = $table->Tables_in_information_schema;
+                $table_name = $table->{"Tables_in_$_database"};
 
                 // Get a result list of columns for a given table...
                 $table_description_results = DB::select("DESCRIBE $_database.$table_name");
