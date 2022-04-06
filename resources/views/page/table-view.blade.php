@@ -96,7 +96,7 @@
             </div>
         </div>
     </div>
-    <div class="card-body container">
+    <div class="card-body">
         <div class="row">
             <div class="col">
                 <table id="results" class="display" style="width:100%">
