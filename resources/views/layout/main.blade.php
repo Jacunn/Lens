@@ -22,7 +22,7 @@
         {{-- Header inclusion --}}
 
         {{-- Main content inclusion --}}
-        <div class="container mx-auto mt-5">
+        <div class="container-xl mx-auto mt-5">
             @yield('content')
         </div>
 

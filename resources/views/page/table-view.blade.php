@@ -85,13 +85,13 @@
 <div class="mx-5 card">
     <div class="card-header">
         <div class="row">
-            <div class="col-md-4 text-left mx-auto">
+            <div class="col-sm-4 text-left mx-auto">
                 <a href="{{ $back_link }}" class="btn btn-secondary" role="button">< Back</a>
             </div>
-            <div class="col-md-4 text-center mx-auto">
+            <div class="col-sm-4 text-center mx-auto">
                 <h2>Query Results</h2>
             </div>
-            <div class="col-md-4 text-center mx-auto">
+            <div class="col-sm-4 text-center mx-auto">
                 
             </div>
         </div>
