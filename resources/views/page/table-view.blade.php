@@ -8,7 +8,7 @@
         $('#share-link').on('click', function() {
             var x = $("<input>");
             $("body").append(x);
-            x.val( "{{!! addcslashes($copy_link, "'") !!}}" ).select();
+            x.val( "{!! addcslashes($copy_link, "'") !!}" ).select();
             document.execCommand("copy");
             x.remove();
         });

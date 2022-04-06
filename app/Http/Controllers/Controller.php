@@ -94,7 +94,7 @@ class Controller extends BaseController
 
     function page_table_view(Request $_request) {
         // Build simple model of the query to pass on to the end user...
-        $query = DB::table($_request->input('database') . '.' . $_request->input('table-select'));
+        $query = DB::table($_request->input($this->param_names['database-name']) . '.' . $_request->input($this->param_names['table-name']));
 
         // Build up our where conditions for insertion.
         $conditions = [];
