@@ -46,7 +46,22 @@
                 "type": "GET",
                 "url": "{{ route('table-data') }}",
                 "dataType": "json",
-                "data": @json($get_parameters),
+                "data": function(d) {
+                    var get = @json($get_parameters);
+                    var order = [];
+                    d.order.forEach(x => {
+                        order.push({ {{$param_names['dt-order-col']}}: x.column, {{$param_names['dt-order-dir']}}: x.dir });
+                    });
+                    
+                    var search = { {{$param_names['dt-search-value']}}: d.search.value, {{$param_names['dt-search-regex']}}: d.search.regex };
+                    
+                    get.{{ $param_names['dt-order'] }} = order;
+                    get.{{ $param_names['dt-search'] }} = search;
+                    get.{{ $param_names['dt-start'] }} = d.start;
+                    get.{{ $param_names['dt-length'] }} = d.length;
+                    get.{{ $param_names['dt-draw'] }} = d.draw;
+                    return get;
+                },
                 "dataSrc": function(x) {
                     console.log(x);
                     $('#sql-query').html(x['query']);

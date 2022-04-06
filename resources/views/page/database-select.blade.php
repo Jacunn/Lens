@@ -16,7 +16,7 @@
             @csrf
             <div class="form-group">
                 <label for="database">Database</label>
-                <select id="database" class="form-control" name="database">
+                <select id="database" class="form-control" name="{{ $param_names['database-name'] }}">
                 @foreach($select_database as $database)
                     <option value="{{ $database }}">{{ $database }}</option>
                 @endforeach

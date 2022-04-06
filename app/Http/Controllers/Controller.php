@@ -15,6 +15,25 @@ class Controller extends BaseController
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
     private $schema = null;
 
+    // Constants for inputs shared across functions. These are kept short for the purposes of generating shorter links.
+    private $param_names = [
+        'where-column'      => 'a',
+        'where-condition'   => 'b',
+        'where-value'       => 'c',
+        'select-column'     => 'd',
+        'table-name'        => 'e',
+        'database-name'     => 'f',
+        'dt-order'          => 'g',
+        'dt-search'         => 'h',
+        'dt-start'          => 'i',
+        'dt-length'         => 'j',
+        'dt-draw'           => 'k',
+        'dt-order-col'      => 'l',
+        'dt-order-dir'      => 'm',
+        'dt-search-value'   => 'n',
+        'dt-search-regex'   => 'o'
+    ]; 
+
     /**
      * Create a new controller instance.
      *
@@ -34,12 +53,13 @@ class Controller extends BaseController
         }
 
         return view('page.database-select', [
-            'select_database' => $database_list
+            'select_database' => $database_list,
+            'param_names' => $this->param_names
         ]);
     }
 
     function page_query_crafter(Request $_request) {
-        $database_input = $_request->input('database');
+        $database_input = $_request->input($this->param_names['database-name']);
         $database_exists = count(DB::select('SHOW DATABASES WHERE `Database` LIKE ?', [$database_input]));
 
         // Check whether we're being provided a valid database - If not, consider this inappropriate meddling.
@@ -67,7 +87,8 @@ class Controller extends BaseController
         return view('page.query-crafter', [
             'tables' => $table_list,
             'database' => $database_input,
-            'back_link' => route('database-select')
+            'back_link' => route('database-select'),
+            'param_names' => $this->param_names
         ]);
     }
 
@@ -78,13 +99,13 @@ class Controller extends BaseController
         // Build up our where conditions for insertion.
         $conditions = [];
 
-        $where_columns = $_request->input('select-where-column');
-        $where_conditions = $_request->input('select-where-condition');
-        $where_inputs = $_request->input('select-where-input');
+        $where_columns = $_request->input($this->param_names['where-column']);
+        $where_conditions = $_request->input($this->param_names['where-condition']);
+        $where_inputs = $_request->input($this->param_names['where-value']);
 
         if($where_columns !== null) {
             for($i = count($where_columns) - 1; $i >= 0; --$i) {
-                if($this->valid_condition($_request->input('database'), $_request->input('table-select'), $where_columns[$i], $where_conditions[$i])) {
+                if($this->valid_condition($_request->input($this->param_names['database-name']), $_request->input($this->param_names['table-name']), $where_columns[$i], $where_conditions[$i])) {
                     
                     $conditions[] = $this->translate_condition($where_columns[$i], $where_conditions[$i], $where_inputs[$i]);
                 }
@@ -95,31 +116,32 @@ class Controller extends BaseController
         $query = $query->where($conditions);
 
         // Generate our columns
-        $columns = $_request->input('checkbox-source-columns');
+        $columns = $_request->input($this->param_names['select-column']);
         
         return view('page.table-view', [
             'get_parameters' => $_request->all(),
             'query_sql' => $query->toSql(),
             'columns' => $columns,
             'copy_link' => route('table-view', $_request->all()),
-            'back_link' => route('query-crafter', ['database' => $_request->input('database')])
+            'back_link' => route('query-crafter', ['database' => $_request->input($this->param_names['database-name'])]),
+            'param_names' => $this->param_names
         ]);
     }
 
     function callback_table_csv(Request $_request) {
         // Reserve our query object for building.
-        $query = DB::table($_request->input('database') . '.' . $_request->input('table-select'));
+        $query = DB::table($_request->input($this->param_names['database-name']) . '.' . $_request->input($this->param_names['table-name']));
 
         // Build up our where conditions for insertion.
         $conditions = [];
 
-        $where_columns = $_request->input('select-where-column');
-        $where_conditions = $_request->input('select-where-condition');
-        $where_inputs = $_request->input('select-where-input');
+        $where_columns = $_request->input($this->param_names['where-column']);
+        $where_conditions = $_request->input($this->param_names['where-condition']);
+        $where_inputs = $_request->input($this->param_names['where-value']);
 
         if($where_columns !== null) {
             for($i = count($where_columns) - 1; $i >= 0; --$i) {
-                if($this->valid_condition($_request->input('database'), $_request->input('table-select'), $where_columns[$i], $where_conditions[$i])) {
+                if($this->valid_condition($_request->input($this->param_names['database-name']), $_request->input($this->param_names['table-name']), $where_columns[$i], $where_conditions[$i])) {
                     
                     $conditions[] = $this->translate_condition($where_columns[$i], $where_conditions[$i], $where_inputs[$i]);
                 }
@@ -131,11 +153,11 @@ class Controller extends BaseController
 
         // Filter for our desired columns.
         $product = [];
-        $product[] = $_request->input('checkbox-source-columns');
+        $product[] = $_request->input($this->param_names['select-column']);
     
         foreach($results as $row) {
             $filtered_row = [];
-            foreach($_request->input('checkbox-source-columns') as $column) {
+            foreach($_request->input($this->param_names['select-column']) as $column) {
                 $filtered_row[] = $row->$column;
             }
 
@@ -148,18 +170,18 @@ class Controller extends BaseController
 
     function callback_table_view(Request $_request) {
         // Reserve our query object for building.
-        $filtered_query = DB::table($_request->input('database') . '.' . $_request->input('table-select'));
+        $filtered_query = DB::table($_request->input($this->param_names['database-name']) . '.' . $_request->input($this->param_names['table-name']));
 
         // Build up our where conditions for insertion.
         $conditions = [];
 
-        $where_columns = $_request->input('select-where-column');
-        $where_conditions = $_request->input('select-where-condition');
-        $where_inputs = $_request->input('select-where-input');
+        $where_columns = $_request->input($this->param_names['where-column']);
+        $where_conditions = $_request->input($this->param_names['where-condition']);
+        $where_inputs = $_request->input($this->param_names['where-value']);
 
         if($where_columns !== null) {
             for($i = count($where_columns) - 1; $i >= 0; --$i) {
-                if($this->valid_condition($_request->input('database'), $_request->input('table-select'), $where_columns[$i], $where_conditions[$i])) {
+                if($this->valid_condition($_request->input($this->param_names['database-name']), $_request->input($this->param_names['table-name']), $where_columns[$i], $where_conditions[$i])) {
                     
                     $conditions[] = $this->translate_condition($where_columns[$i], $where_conditions[$i], $where_inputs[$i]);
                 }
@@ -169,22 +191,22 @@ class Controller extends BaseController
         // Put in our pagination and attach the where conditions.
         $filtered_query = $filtered_query->where($conditions)->where(function ($x) use($_request) {
             // Generate additional where criteria if search conditions are supplied.
-            if($_request->input('search')['value'] !== null) {
-                for($i = count($_request->input('checkbox-source-columns')) - 1; $i >= 0; --$i) {
-                    $x->orWhere($_request->input('checkbox-source-columns')[$i], 'LIKE', '%' . $_request->input('search')['value'] . '%');
+            if($_request->input($this->param_names['dt-search'])[$this->param_names['dt-search-value']] !== null) {
+                for($i = count($_request->input($this->param_names['select-column'])) - 1; $i >= 0; --$i) {
+                    $x->orWhere($_request->input($this->param_names['select-column'])[$i], 'LIKE', '%' . $_request->input($this->param_names['dt-search'])[$this->param_names['dt-search-value']] . '%');
                 }
             }
 
         });
 
         // Now get the total of records there are.
-        $total = DB::table($_request->input('database') . '.' . $_request->input('table-select'))->count();
+        $total = DB::table($_request->input($this->param_names['database-name']) . '.' . $_request->input($this->param_names['table-name']))->count();
         
         // Get the total that meet our filter criteria.
         $filtered = $filtered_query->count();
 
         // Execute the query.
-        $full_query = $filtered_query->skip($_request->input('start') ?? 0)->take($_request->input('length') ?? 100);
+        $full_query = $filtered_query->skip($_request->input($this->param_names['dt-start']) ?? 0)->take($_request->input($this->param_names['dt-length']) ?? 100);
         $results = $full_query->get();
 
         // Filter for our desired columns.
@@ -192,7 +214,7 @@ class Controller extends BaseController
 
         foreach($results as $row) {
             $filtered_row = [];
-            foreach($_request->input('checkbox-source-columns') as $column) {
+            foreach($_request->input($this->param_names['select-column']) as $column) {
                 $filtered_row[$column] = $row->$column;
             }
 
@@ -201,7 +223,7 @@ class Controller extends BaseController
 
         // Convert it into data-tables format.    
         return response()->json([
-            'draw' => $_request->input('draw'),
+            'draw' => $_request->input($this->param_names['dt-draw']),
             'recordsTotal' => $total,
             'recordsFiltered' => $filtered,
             'data' => $product,

@@ -15,7 +15,7 @@
 
         for(x in window.database_schema[_table]) {
             html += '<div class="col-sm-4">'
-                    + '<input class=form-check-input"" type="checkbox" name="checkbox-source-columns[]" id="checkbox-source-columns-'+x+'" value="'+x+'" checked></input>'
+                    + '<input class=form-check-input"" type="checkbox" name="{{ $param_names['select-column'] }}[]" id="checkbox-source-columns-'+x+'" value="'+x+'" checked></input>'
                     + '<label class="form-check-label" for="checkbox-source-columns-'+x+'"> '+x+'</label>'
                 + '</div>';
         }
@@ -27,7 +27,7 @@
 
     function html_where_column(_table) {
 
-        var html = '<select name="select-where-column[]" class="form-control">';
+        var html = '<select name="{{ $param_names['where-column'] }}[]" class="form-control">';
 
         for(key in window.database_schema[_table]) {
             html += '<option value="'+key+'">'+key+'</option>';
@@ -39,7 +39,7 @@
     }
 
     function html_where_condition(_table, _column) {
-        var html = '<select name="select-where-condition[]" class="form-control">';
+        var html = '<select name="{{ $param_names['where-condition'] }}[]" class="form-control">';
         if(_column === null) {
             html += '<option value=""> - </option>';
         }
@@ -86,23 +86,23 @@
         var html;
 
         if(_column === null) {
-            html = '<input class="form-control" name="select-where-input[]" type="text" placeholder=" - " readonly></input>';
+            html = '<input class="form-control" name="{{ $param_names['where-value'] }}[]" type="text" placeholder=" - " readonly></input>';
         } else {
             switch(window.database_schema[_table][_column]) {
                 case 'STRING':
-                    html = '<input class="form-control" name="select-where-input[]" type="text" placeholder="Enter text..."></input>';
+                    html = '<input class="form-control" name="{{ $param_names['where-value'] }}[]" type="text" placeholder="Enter text..."></input>';
                     break;
                 case 'INTEGER':
-                    html = '<input class="form-control" name="select-where-input[]" type="number" step="1" placeholder="0"></input>';
+                    html = '<input class="form-control" name="{{ $param_names['where-value'] }}[]" type="number" step="1" placeholder="0"></input>';
                     break;
                 case 'FLOAT':
-                    html = '<input class="form-control" name="select-where-input[]" type="number" placeholder="0"></input>';
+                    html = '<input class="form-control" name="{{ $param_names['where-value'] }}[]" type="number" placeholder="0"></input>';
                     break;
                 case 'BOOLEAN':
-                    html = '<select class="form-control" name="select-where-input[]"><option value="TRUE">TRUE</option><option value="FALSE">FALSE</option></select>'
+                    html = '<select class="form-control" name="{{ $param_names['where-value'] }}[]"><option value="TRUE">TRUE</option><option value="FALSE">FALSE</option></select>'
                     break;
                 case 'TIME':
-                    html = '<input class="form-control" name="select-where-input[]" type="date"></input>';
+                    html = '<input class="form-control" name="{{ $param_names['where-value'] }}[]" type="date"></input>';
                     break;
             }
         }
@@ -146,11 +146,11 @@
                     $(i.currentTarget).parent().parent().remove();
             }).trigger('change');
 
-           $('.form-control[name="select-where-column[]"]').on('change', function(e) {
+           $('.form-control[name="{{ $param_names['where-column'] }}[]"]').on('change', function(e) {
                 $(e.currentTarget).parent().siblings('.where-condition').html(html_where_condition($('#table-select').find(':selected').text(), $(e.currentTarget).val()));
                 
 
-                $('.form-control[name="select-where-condition[]"]').on('change', function(i) {
+                $('.form-control[name="{{ $param_names['where-condition'] }}[]"]').on('change', function(i) {
                     var current_column = $(i.currentTarget).parent().siblings('.where-column').children('select').val();
                     console.log(current_column);
                     $(i.currentTarget).parent().siblings('.where-input').html(html_where_input($('#table-select').find(':selected').text(), current_column));
@@ -183,11 +183,11 @@
         <form action="{{ route('table-view') }}" method="GET">
             {{-- Hidden Variables --}}
             @csrf
-            <input name="database" type="text" value="{{ $database }}" hidden readonly></input>
+            <input name="{{ $param_names['database-name'] }}" type="text" value="{{ $database }}" hidden readonly></input>
             {{-- Table Selection --}}
             <div class="form-group">
                 <label for="table-select">Table</label>
-                <select id='table-select' name="table-select" class="form-control">
+                <select id='table-select' name="{{ $param_names['table-name'] }}" class="form-control">
                 @foreach($tables as $table_name => $table_columns)
                     <option value="{{ $table_name }}">{{ $table_name }}</option>
                 @endforeach
