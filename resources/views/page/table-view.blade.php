@@ -11,6 +11,7 @@
             x.val( "{!! addcslashes($copy_link, "'") !!}" ).select();
             document.execCommand("copy");
             x.remove();
+            $.notify("Link Copied", {globalPosition: 'middle center'});
         });
 
         $('#export-csv').on('click', function() {
