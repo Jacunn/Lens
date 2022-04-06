@@ -3,6 +3,7 @@
 ])
 @push('js')
 <script>
+
     $(document).ready(function() {
         
         $('#share-link').on('click', function() {
@@ -11,7 +12,13 @@
             x.val( "{!! addcslashes($copy_link, "'") !!}" ).select();
             document.execCommand("copy");
             x.remove();
-            $.notify("Link Copied", {globalPosition: 'middle center'});
+            Swal.fire({
+                position: 'middle-center',
+                icon: 'success',
+                title: 'Link copied',
+                showConfirmButton: false,
+                timer: 1000
+            })            
         });
 
         $('#export-csv').on('click', function() {
@@ -64,7 +71,6 @@
                     return get;
                 },
                 "dataSrc": function(x) {
-                    console.log(x);
                     $('#sql-query').html(x['query']);
                     return x.data;
                 }
