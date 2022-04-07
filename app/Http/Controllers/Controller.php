@@ -238,7 +238,7 @@ class Controller extends BaseController
 
         if($database_exists) {
             // Get list of tables, and reserve a product.
-            $table_results = DB::select("SHOW FULL TABLES FROM $_database WHERE Table_Type NOT LIKE 'VIEW");
+            $table_results = DB::select("SHOW FULL TABLES FROM $_database WHERE Table_Type NOT LIKE 'VIEW'");
             $table_list = [];
 
             // Iterate over tables, building our schema.
