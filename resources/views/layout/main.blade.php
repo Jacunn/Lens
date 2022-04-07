@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Lens</title>
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
         {{-- Stylesheets --}}
         <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.css">
