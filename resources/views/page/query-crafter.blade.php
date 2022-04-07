@@ -110,7 +110,7 @@
         return html;
     }
 
-    function html_where_row(_table) {
+    function html_where_row(_table, _id_key) {
         return '<div class="row mb-2">'
                 + '<div class="col where-column">' + html_where_column(_table) + '</div>'
                 + '<div class="col where-condition">' + html_where_condition(_table, null) + '</div>'
@@ -139,20 +139,25 @@
 
        /* Add a condition when the condition button is clicked */
        $('#add-condition').on('click', function(x) {
-           $('#condition-container').append(html_where_row($('#table-select').find(":selected").text()));
-           
-           $('.remove-condition').on('click', function(i) {
-                    console.log(i);
-                    $(i.currentTarget).parent().parent().remove();
-            }).trigger('change');
+            // Get our element for listening purposes...
+            var appended = $(html_where_row($('#table-select').find(":selected").text()));
 
-           $('.form-control[name="{{ $param_names['where-column'] }}[]"]').on('change', function(e) {
+           // Add the row...
+           $('#condition-container').append(appended);
+           
+           // Add the listener for that row being removed...
+           $(appended).children('div').children('.remove-condition').on('click', function(i) {
+                    $(appended).children('div').children('*').off();
+                    $(appended).remove();
+            });
+
+            // Listen for column selection changes.
+            $(appended).children('div').children('.form-control[name="{{ $param_names['where-column'] }}[]"]').on('change', function(e) {
                 $(e.currentTarget).parent().siblings('.where-condition').html(html_where_condition($('#table-select').find(':selected').text(), $(e.currentTarget).val()));
                 
-
-                $('.form-control[name="{{ $param_names['where-condition'] }}[]"]').on('change', function(i) {
+                // Listen for condition selection changes.
+                $(appended).children('div').children('.form-control[name="{{ $param_names['where-condition'] }}[]"]').on('change', function(i) {
                     var current_column = $(i.currentTarget).parent().siblings('.where-column').children('select').val();
-                    console.log(current_column);
                     $(i.currentTarget).parent().siblings('.where-input').html(html_where_input($('#table-select').find(':selected').text(), current_column));
                 }).trigger('change');
             }).trigger('change');
