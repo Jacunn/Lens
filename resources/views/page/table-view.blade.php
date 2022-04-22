@@ -79,6 +79,7 @@
             @foreach($columns as $column)
                 {
                     "data": "{{ $column }}"
+
                 },
             @endforeach
             @endisset
@@ -109,7 +110,7 @@
                     <thead>
                         <tr>
                             @foreach($columns as $column)
-                            <th>{{ $column }}</th>
+                            <th>{{ isset($column_aliases[$column]) ? $column_aliases[$column] : $column }}</th>
                             @endforeach
                         </tr>
                     </thead>

@@ -18,7 +18,7 @@
                 <label for="database">Database</label>
                 <select id="database" class="form-control" name="{{ $param_names['database-name'] }}">
                 @foreach($select_database as $database)
-                    <option value="{{ $database }}">{{ $database }}</option>
+                    <option value="{{ $database['name'] }}">{{ $database['alias'] }}</option>
                 @endforeach
                 </select>
                 <small id="database-select-help" class="form-text text-muted">This is the database you wish to pull information from...</small>

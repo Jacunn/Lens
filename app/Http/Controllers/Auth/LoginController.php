@@ -46,7 +46,9 @@ class LoginController extends Controller
      */
     public function redirectToProvider()
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')
+            ->scopes(['https://www.googleapis.com/auth/admin.directory.orgunit.readonly'])
+            ->redirect();
     }
 
      /**
@@ -66,14 +68,15 @@ class LoginController extends Controller
         if(explode("@", $user->email)[1] !== 'launtel.net.au'){
             return redirect(route('login'));
         }
-        
+
         // check if they're an existing user
         $existingUser = User::where('email', $user->email)->first();
-        
+
         if($existingUser){
+            // Update the user to reflect their current OU and login time...
             auth()->login($existingUser, true);
         } else {
-            // create a new user
+            // Create a new user, storing their current OU...
             $newUser = new User;
             $newUser->email = $user->email;
             $newUser->save();

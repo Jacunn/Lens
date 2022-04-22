@@ -13,7 +13,7 @@
     function load_checkbox_model(_table) {
         var html = '<div class="row">';
 
-        for(x in window.database_schema[_table]) {
+        for(x in window.database_schema[_table]['table_columns']) {
             html += '<div class="col-sm-4">'
                     + '<input class=form-check-input"" type="checkbox" name="{{ $param_names['select-column'] }}[]" id="checkbox-source-columns-'+x+'" value="'+x+'" checked></input>'
                     + '<label class="form-check-label" for="checkbox-source-columns-'+x+'"> '+x+'</label>'
@@ -29,8 +29,8 @@
 
         var html = '<select name="{{ $param_names['where-column'] }}[]" class="form-control">';
 
-        for(key in window.database_schema[_table]) {
-            html += '<option value="'+key+'">'+key+'</option>';
+        for([key, value] of Object.entries(window.database_schema[_table]['table_columns'])) {
+            html += '<option value="'+key+'">'+value.alias+'</option>';
         }
 
         html += '</select>';
@@ -44,7 +44,7 @@
             html += '<option value=""> - </option>';
         }
         else {
-            switch(window.database_schema[_table][_column]) {
+            switch(window.database_schema[_table]['table_columns'][_column]['type']) {
                 case 'STRING':
                     html += '<option value="EQUALS">EQUALS</option>'
                         + '<option value="NOT EQUALS">NOT EQUALS</option>'
@@ -88,7 +88,7 @@
         if(_column === null) {
             html = '<input class="form-control" name="{{ $param_names['where-value'] }}[]" type="text" placeholder=" - " readonly></input>';
         } else {
-            switch(window.database_schema[_table][_column]) {
+            switch(window.database_schema[_table]['table_columns'][_column]['type']) {
                 case 'STRING':
                     html = '<input class="form-control" name="{{ $param_names['where-value'] }}[]" type="text" placeholder="Enter text..."></input>';
                     break;
@@ -193,8 +193,8 @@
             <div class="form-group">
                 <label for="table-select">Table</label>
                 <select id='table-select' name="{{ $param_names['table-name'] }}" class="form-control">
-                @foreach($tables as $table_name => $table_columns)
-                    <option value="{{ $table_name }}">{{ $table_name }}</option>
+                @foreach($tables as $table)
+                    <option value="{{ $table['table_name'] }}">{{ $table['table_alias'] }}</option>
                 @endforeach
                 </select>
                 <small id="table-select-help" class="form-text text-muted">This is where you would like to pull the information from...</small>

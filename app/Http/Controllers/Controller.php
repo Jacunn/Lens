@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Error;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
+use App\Models\DatabaseAccess;
+use App\Models\TableAccess;
+use App\Models\DatabaseAlias;
+use App\Models\TableAlias;
+use App\Models\ColumnAlias;
 
 class Controller extends BaseController
 {
@@ -48,8 +52,15 @@ class Controller extends BaseController
         $database_results = DB::select('SHOW DATABASES');
         $database_list = [];
 
+        // Select all potential aliases so that we're only performing one query...
+        $database_aliases = DatabaseAlias::all()->keyBy('name')->toArray();
+
         foreach($database_results as $database) {
-            $database_list[] = $database->Database;
+            // Check if an alias for this database exists - If so, use that. If not, use the default name.
+            $database_list[] = [
+                'alias' => isset($database_aliases[$database->Database]) ? $database_aliases[$database->Database]['alias'] : $database->Database, 
+                'name' => $database->Database
+            ];
         }
 
         return view('page.database-select', [
@@ -68,6 +79,12 @@ class Controller extends BaseController
             die('HIGH LEVEL INJECTION ATTEMPT OR FALSE DATABASE PROVIDED. BOOTING USER AND TERMINATING PROCESS.');
         }
 
+        // Get table and column aliases for a given database so we're only querying this once...
+        $table_aliases = TableAlias::where('database_name', '=', $this->param_names['database-name'])->get()->keyBy('table_name');
+        $column_aliases = ColumnAlias::where('database_name', '=', $this->param_names['database-name'])->get()->keyBy(function($x) {
+            return "$x->table_name.$x->column_name";
+        });
+
         $table_results = DB::select("SHOW FULL TABLES FROM $database_input WHERE Table_Type NOT LIKE 'VIEW'");
         $table_list = [];
 
@@ -78,9 +95,19 @@ class Controller extends BaseController
             // Get a result list of columns for a given table...
             $table_description_results = DB::select("DESCRIBE $database_input.$table_name");
 
+            $table_list[$table_name] = [
+                'table_name' => $table_name,
+                'table_alias' => isset($table_aliases->$table_name) ? $table_aliases->$table_name->alias : $table_name,
+                'table_columns' => []
+            ];
+
             // Iterate across those columns and produce a model of how the data is going to look...
             foreach($table_description_results as $column) {
-                $table_list[$table_name][$column->Field] = $this->process_type($column->Type);
+                $table_list[$table_name]['table_columns'][$column->Field] = [
+                    'name' => $column->Field,
+                    'alias' => isset($column_aliases->{"$table_name.$column->Field"}) ? $column_aliases->{"$table_name.$column->Field"}->alias : $column->Field,
+                    'type' => $this->process_type($column->Type)
+                ]; 
             }
         }
 
@@ -117,11 +144,16 @@ class Controller extends BaseController
 
         // Generate our columns
         $columns = $_request->input($this->param_names['select-column']);
+        $column_aliases = ColumnAlias::where([
+            ['database_name', '=', $this->param_names['database-name']],
+            ['table_name', '=', $this->param_names['table-name']]
+        ])->get()->keyBy('column_name');
         
         return view('page.table-view', [
             'get_parameters' => $_request->all(),
             'query_sql' => $query->toSql(),
             'columns' => $columns,
+            'column_aliases' => $column_aliases,
             'copy_link' => route('table-view', $_request->all()),
             'back_link' => route('query-crafter', [$this->param_names['database-name'] => $_request->input($this->param_names['database-name'])]),
             'param_names' => $this->param_names
