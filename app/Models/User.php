@@ -29,6 +29,14 @@ class User extends Authenticatable
      */
     protected $hidden = [];
 
+    public function databasesAccessible() {
+        return DatabaseAccess::select('name')->where('user_id', '=', $this->id)->get()->keyBy('name');
+    }
+
+    public function tablesAccessible($_database) {
+        return TableAccess::select('table_name')->where([['user_id', '=', $this->id], ['database_name', '=', $_database]])->get()->keyBy('table_name');
+    }
+
     public function canAccessDatabase(string $_database) {
         return DatabaseAccess::where([['name', '=', $_database],['user_id', '=', $this->id]])->count() === 0 ? false : true;
     }

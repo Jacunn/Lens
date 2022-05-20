@@ -2,24 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Foundation\Bus\DispatchesJobs;
-use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
-use App\Models\DatabaseAccess;
-use App\Models\TableAccess;
 use App\Models\DatabaseAlias;
 use App\Models\TableAlias;
 use App\Models\ColumnAlias;
+use Illuminate\Support\Facades\Auth;
 
 class Controller extends BaseController
 {
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
-    private $schema = null;
-
-    // Constants for inputs shared across functions. These are kept short for the purposes of generating shorter links.
+        // Constants for inputs shared across functions. These are kept short for the purposes of generating shorter links.
     private $param_names = [
         'where-column'      => 'a',
         'where-condition'   => 'b',
@@ -55,12 +48,18 @@ class Controller extends BaseController
         // Select all potential aliases so that we're only performing one query...
         $database_aliases = DatabaseAlias::all()->keyBy('name')->toArray();
 
+        // Select all of the databases accessible to the user...
+        $accessible_databases = Auth::user()->databasesAccessible();
+
         foreach($database_results as $database) {
-            // Check if an alias for this database exists - If so, use that. If not, use the default name.
-            $database_list[] = [
-                'alias' => isset($database_aliases[$database->Database]) ? $database_aliases[$database->Database]['alias'] : $database->Database, 
-                'name' => $database->Database
-            ];
+            // Check if the user has access to that database.
+            if(isset($accessible_databases[$database->Database])) {
+                // Check if an alias for this database exists - If so, use that. If not, use the default name.
+                $database_list[] = [
+                    'alias' => isset($database_aliases[$database->Database]) ? $database_aliases[$database->Database]['alias'] : $database->Database, 
+                    'name' => $database->Database
+                ];
+            }
         }
 
         return view('page.database-select', [
@@ -88,26 +87,31 @@ class Controller extends BaseController
         $table_results = DB::select("SHOW FULL TABLES FROM $database_input WHERE Table_Type NOT LIKE 'VIEW'");
         $table_list = [];
 
+        // Select all of the tables accessible to the user...
+        $accessible_tables = Auth::user()->tablesAccessible($database_input);
+
         foreach($table_results as $table) {
             // Extract the name from our above query results...
             $table_name = $table->{"Tables_in_$database_input"};
 
-            // Get a result list of columns for a given table...
-            $table_description_results = DB::select("DESCRIBE $database_input.$table_name");
+            if(isset($accessible_tables[$table_name])) {
+                // Get a result list of columns for a given table...
+                $table_description_results = DB::select("DESCRIBE $database_input.$table_name");
 
-            $table_list[$table_name] = [
-                'table_name' => $table_name,
-                'table_alias' => isset($table_aliases->$table_name) ? $table_aliases->$table_name->alias : $table_name,
-                'table_columns' => []
-            ];
+                $table_list[$table_name] = [
+                    'table_name' => $table_name,
+                    'table_alias' => isset($table_aliases->$table_name) ? $table_aliases->$table_name->alias : $table_name,
+                    'table_columns' => []
+                ];
 
-            // Iterate across those columns and produce a model of how the data is going to look...
-            foreach($table_description_results as $column) {
-                $table_list[$table_name]['table_columns'][$column->Field] = [
-                    'name' => $column->Field,
-                    'alias' => isset($column_aliases->{"$table_name.$column->Field"}) ? $column_aliases->{"$table_name.$column->Field"}->alias : $column->Field,
-                    'type' => $this->process_type($column->Type)
-                ]; 
+                // Iterate across those columns and produce a model of how the data is going to look...
+                foreach($table_description_results as $column) {
+                    $table_list[$table_name]['table_columns'][$column->Field] = [
+                        'name' => $column->Field,
+                        'alias' => isset($column_aliases->{"$table_name.$column->Field"}) ? $column_aliases->{"$table_name.$column->Field"}->alias : $column->Field,
+                        'type' => $this->process_type($column->Type)
+                    ]; 
+                }
             }
         }
 
