@@ -13,23 +13,19 @@ use Illuminate\Support\Facades\Auth;
 class Controller extends BaseController
 {
     // Constants for inputs shared across functions. These are kept short for the purposes of generating shorter links.
+    // It is also important to note that this is a static list so as to preserve older links that may be used.
     private $param_names = [
-        'where-column'      => 'a',
-        'where-condition'   => 'b',
-        'where-value'       => 'c',
-        'select-column'     => 'd',
-        'table-name'        => 'e',
-        'database-name'     => 'f',
-        'dt-order'          => 'g',
-        'dt-search'         => 'h',
-        'dt-start'          => 'i',
-        'dt-length'         => 'j',
-        'dt-draw'           => 'k',
-        'dt-order-col'      => 'l',
-        'dt-order-dir'      => 'm',
-        'dt-search-value'   => 'n',
-        'dt-search-regex'   => 'o'
-    ]; 
+        'where-column'      => 'a', 'where-condition'   => 'b',
+        'where-value'       => 'c', 'select-column'     => 'd',
+        'table-name'        => 'e', 'table-names'       => 'f',
+        'join-table-a'      => 'g', 'join-table-b'      => 'h',
+        'join-column-a'     => 'i', 'join-column-b'     => 'j',
+        'database-name'     => 'k', 'dt-order'          => 'l',
+        'dt-search'         => 'm', 'dt-start'          => 'n',
+        'dt-length'         => 'o', 'dt-draw'           => 'p',
+        'dt-order-col'      => 'q', 'dt-order-dir'      => 'r',
+        'dt-search-value'   => 's', 'dt-search-regex'   => 't'
+    ];
 
     /**
      * Create a new controller instance.

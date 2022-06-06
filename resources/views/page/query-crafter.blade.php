@@ -7,6 +7,8 @@
     // Long life models...
     window.database_schema = @json($tables);
 
+    console.log(window.database_schema);
+
     // On demand models...
     window.column_checkbox_model;
 
@@ -23,6 +25,48 @@
         html += '</div>';
 
         window.column_checkbox_model = html;
+    }
+
+    function html_join_table(_selected_table, _exclude_table = undefined, _a_or_b = 'a') {
+        var param_name = _a_or_b == 'b' ? '{{ $param_names['join-table-b'] }}' : '{{ $param_names['join-table-a'] }}';
+
+        var html = '<select name="'+param_name+'[]" class="form-control">';
+        
+        // Fetch the table names that are not our currently selected table.
+        for(key of Object.keys(window.database_schema)) {
+            if(key !== _selected_table && key !== _exclude_table) {
+                html += '<option value="'+key+'">'+key+'</option>';
+            }
+        }
+
+        html += '</select>';
+
+        return html;
+    }
+
+    function html_join_column(_table, _a_or_b = 'a') {
+        var param_name = _a_or_b == 'b' ? '{{ $param_names['join-column-b'] }}' : '{{ $param_names['join-column-a'] }}';
+
+        var html = '<select name="'+param_name+'[]" class="form-control">';
+    
+        for([key, value] of Object.entries(window.database_schema[_table]['table_columns'])) {
+            html += '<option value="'+key+'">'+value.alias+'</option>';
+        }
+
+        html += '</select>';
+
+        return html;
+    }
+
+    function html_join_row(_table) {
+        return '<div class="row mb-2">'
+                + '<div class="col join-table-a">' + html_join_table(_table) + '</div>'
+                + '<div class="col join-column-a">' + html_join_column(_table) + '</div>'
+                + '<div class="col"> MATCHES </div>'
+                + '<div class="col join-table-b">' + html_join_table(_table, undefined, 'b') + '</div>'
+                + '<div class="col join-column-b">' + html_join_column(_table, undefined, 'b') + '</div>'
+                + '<div class="col d-grid"><button type="button" class="remove-condition btn btn-danger">Remove</button></div>'
+            + '</div>';
     }
 
     function html_where_column(_table) {
@@ -75,7 +119,6 @@
                     break;                    
             }
         } 
-        
 
         html += '</select>';
 
@@ -110,7 +153,7 @@
         return html;
     }
 
-    function html_where_row(_table, _id_key) {
+    function html_where_row(_table) {
         return '<div class="row mb-2">'
                 + '<div class="col where-column">' + html_where_column(_table) + '</div>'
                 + '<div class="col where-condition">' + html_where_condition(_table, null) + '</div>'
@@ -137,8 +180,16 @@
            $('#column-group').html(window.column_checkbox_model);
        }).trigger('change');
 
+       $('#add-join-condition').on('click', function(x) {
+           // Get our element for listening purposes...
+           var appended = $(html_join_row($('#table-select').find(":selected").text()));
+
+            // Add the row...
+            $('#add-join-container').append(appended);
+       });
+
        /* Add a condition when the condition button is clicked */
-       $('#add-condition').on('click', function(x) {
+       $('#add-where-condition').on('click', function(x) {
             // Get our element for listening purposes...
             var appended = $(html_where_row($('#table-select').find(":selected").text()));
 
@@ -191,7 +242,7 @@
             <input name="{{ $param_names['database-name'] }}" type="text" value="{{ $database }}" hidden readonly></input>
             {{-- Table Selection --}}
             <div class="form-group">
-                <label for="table-select">Table</label>
+                <label for="table-select" class="fw-bold text-uppercase">Table</label>
                 <select id='table-select' name="{{ $param_names['table-name'] }}" class="form-control">
                 @foreach($tables as $table)
                     <option value="{{ $table['table_name'] }}">{{ $table['table_alias'] }}</option>
@@ -201,17 +252,30 @@
             </div>
             </br>
             {{-- Join Selection --}}
+            <div class="form-group">
+                <label for="join-group" class="fw-bold text-uppercase">JOIN</label>
+                <div id="join-group"></div>
+                <small id="join-group-help" class="form-text text-muted">If you would like to connect the first table to any others, you can specify here. Build it by pressing 'Add Join' and filling out the condition from left-to-right.</small>
+            </div>
+            <div class="form-group">
+                <div class="d-grid">
+                    <button id="add-join-condition" type="button" class="btn btn-secondary">Add Join</button>
+                </div>
+                <div id="add-join-container" class="container-fluid mt-3">
+
+                </div>
+            </div>
 
             {{-- Column Selection --}}
             <div class="form-group">
-                <label for="column-group">Columns</label>
+                <label for="column-group" class="fw-bold text-uppercase">Columns</label>
                 <div id="column-group"></div>
                 <small id="column-group-help" class="form-text text-muted">These are the bits of information you'd like to retrieve. Just tick the boxes for the columns that you want information about.</small>
             </div>
             </br>
             {{-- Where Selection --}}
             <div class="form-group">
-                <label for="where-group">Where</label>
+                <label for="where-group" class="fw-bold text-uppercase">Where</label>
                 <div id="where-group"></div>
                 <small id="where-group-help" class="form-text text-muted">This is where you define any filtering you would like on this query. Build it by pressing 'Add Condition' and filling out the condition from left-to-right.</small>
             </div>
